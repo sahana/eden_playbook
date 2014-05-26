@@ -1,0 +1,103 @@
+---
+- name: Install Admin Tools
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - unzip
+    - psmisc
+    - mlocate
+    - telnet
+    - lrzsz
+    - vim
+    - elinks-lite
+    - rcconf
+    - htop
+    - sudo
+    - p7zip
+    - dos2unix
+    - curl
+
+- name: Install git
+  apt: name=git-core state=latest
+
+- name: Install Exim4
+  apt: name={{item}} state=latest
+  with_items:
+    - exim4-config
+    - exim4-daemon-light
+
+- name: Install python libs
+  apt: name={{item}} state=latest
+  with_items:
+    - libgeos-c1
+    - python-dev
+    - python-lxml
+    - python-setuptools
+    - python-dateutil
+    - python-serial
+    - python-imaging
+    - python-reportlab
+    - python-matplotlib
+    - python-xlwt
+    - python-xlrd
+    - build-essential
+    - libgeos-dev
+    - python-pip
+
+- name: Install Shapely
+  pip: name=Shapely
+
+- name: Create web2py user
+  #user: name=web2py system=true
+  command: adduser --system --disabled-password web2py
+
+- name: Create web2py group
+  group: name=web2py state=present
+
+- name: Clone web2py
+  git: repo=git://github.com/web2py/web2py.git dest=/home/web2py
+
+- name: Copy wsgihandler
+  command: cp -f /home/web2py/handlers/wsgihandler.py /home/web2py
+
+- name: Copy routes.py
+  copy: src=routes.py dest=/home/web2py/routes.py
+
+- name: Create matplotlib directory
+  file: path=/home/web2py/.matplotlib state=directory owner=web2py
+
+- name: Update wsgihandler.py
+  lineinfile: dest=/home/web2py/wsgihandler.py
+              regexp=''
+              insertafter=EOF
+              line='os.environ["MPLCONFIGDIR"] = "/home/web2py/.matplotlib"'
+
+- name: Edit matplotlibrc
+  lineinfile: dest=/etc/matplotlibrc state=present regexp='TkAgg' line='Agg'
+
+- name: Clone Eden
+  git: repo=git://github.com/flavour/eden.git dest=/home/web2py/applications/eden
+
+- name: Fix permissions
+  file: path=/home/{{item}} state=directory owner=web2py
+  with_items:
+    - web2py
+    - web2py/applications
+    - web2py/applications/admin/cache
+    - web2py/applications/admin/cron
+    - web2py/applications/admin/databases
+    - web2py/applications/admin/errors
+    - web2py/applications/admin/sessions
+    - web2py/applications/eden
+    - web2py/applications/eden/cache
+    - web2py/applications/eden/cron
+    - web2py/applications/eden/databases
+    - web2py/applications/eden/errors
+    - web2py/applications/eden/models
+    - web2py/applications/eden/sessions
+    - web2py/applications/eden/static/img/markers
+    - web2py/applications/eden/static/cache
+    - web2py/applications/eden/static/cache/chart
+    - web2py/applications/eden/uploads
+    - web2py/applications/eden/uploads/gis_cache
+    - web2py/applications/eden/uploads/images
+    - web2py/applications/eden/uploads/tracks
