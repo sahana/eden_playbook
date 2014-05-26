@@ -1,0 +1,34 @@
+---
+- name: Install dependencies
+  apt: name={{ item }} state=latest
+  with_items:
+    - autoconf
+    - automake
+    - libtool
+    - gettext
+    - rrdtool
+
+- name: Clone Repo
+  git: repo=http://github.com/cherokee/webserver.git dest=/home/admin/webserver
+
+- name: Build
+  command: "{{ item }} chdir=/home/admin/webserver"
+  with_items:
+    - ./autogen.sh --prefix=/usr --localstatedir=/var --sysconfdir=/etc
+    - make
+    - make install
+
+- name: Create log dir
+  file: path=/var/log/cherokee state=directory owner=www-data group=www-data
+
+- name: Create graphs dir
+  file: path=/var/log/cherokee state=directory owner=www-data group=www-data
+
+- name: Copy init.d script
+  copy: src=cherokee dest=/etc/init.d/cherokee
+
+- name: Change permissions
+  file: path=/etc/init.d/cherokee mode=755
+
+- name: update-rc.d
+  command: update-rc.d cherokee defaults
