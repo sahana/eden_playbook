@@ -1,0 +1,42 @@
+---
+- name: Get and extract source
+  shell: "{{ item }} chdir=/tmp"
+  with_items:
+    - wget http://projects.unbit.it/downloads/uwsgi-1.9.18.2.tar.gz
+    - tar zxvf uwsgi-1.9.18.2.tar.gz
+
+- name: Build
+  shell: "{{ item }} chdir=/tmp/uwsgi-1.9.18.2"
+  with_items:
+    - python uwsgiconfig.py --build pyonly.ini
+    - cp uwsgi /usr/local/bin
+
+- name: Copy Files
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - { src: 'logrotate', dest: '/etc/logrotate.d/uwsgi' }
+    - { src: 'scheduler', dest: '/home/web2py/run_scheduler.py' }
+    - { src: 'uwsgi.ini', dest: '/home/web2py/uwsgi.ini' }
+
+- name: Create pid file
+  file: path=/tmp/uwsgi-prod.pid state=touch owner=web2py group=web2py
+
+- name: Create log dir
+  file: path=/var/log/uwsgi state=directory owner=web2py group=web2py
+
+- name: Copy init.d script
+  copy: src=uwsgi dest=/etc/init.d/uwsgi-prod
+
+- name: Fix permissions for init.d script
+  file: path=/etc/init.d/uwsgi-prod state=file mode=755
+
+- name: update-rc.d
+  command: update-rc.d uwsgi-prod defaults
+
+- name: Configuring Cherokee
+  copy: src=cherokee.conf dest=/etc/cherokee/cherokee.conf
+
+- name: Copy maintenance.html
+  copy: src=maintenance.html dest=/var/www/maintenance.html
+  notify: restart cherokee
+
