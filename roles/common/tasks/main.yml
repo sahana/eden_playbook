@@ -71,8 +71,8 @@
               insertafter=EOF
               line='os.environ["MPLCONFIGDIR"] = "/home/web2py/.matplotlib"'
 
-- name: Edit matplotlibrc
-  lineinfile: dest=/etc/matplotlibrc state=present regexp='TkAgg' line='Agg'
+# - name: Edit matplotlibrc
+#   lineinfile: dest=/etc/matplotlibrc state=present backref=yes regexp='backend      : TkAgg' line='backend      : Agg'
 
 - name: Clone Eden
   git: repo=git://github.com/flavour/eden.git dest=/home/web2py/applications/eden

@@ -22,7 +22,7 @@
   file: path=/var/log/cherokee state=directory owner=www-data group=www-data
 
 - name: Create graphs dir
-  file: path=/var/log/cherokee state=directory owner=www-data group=www-data
+  file: path=/var/lib/cherokee/graphs state=directory owner=www-data group=www-data
 
 - name: Copy init.d script
   copy: src=cherokee dest=/etc/init.d/cherokee
