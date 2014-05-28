@@ -84,9 +84,6 @@
 
 - name: Update crontab
   copy: src=cron dest=/etc/crontab
-
-- name: Restart cherokee
-  notfiy: restart cherokee
-
-- name: Start uwsgi
-  notfiy: start uwsgi-prod
+  notify:
+   - restart cherokee
+   - start uwsgi-prod
