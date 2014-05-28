@@ -11,9 +11,7 @@ Testing the roles
 3.  Create/Update /etc/ansible/hosts with the host information. Example
 
         [ec2]
-        ***.***.***.***.***
-
-    Replace *s with your instance's public ip
+        <PUBLIC IP>
 
 4. cd to the repository and create a file called deploy.yml. The contents would be similar to
 
