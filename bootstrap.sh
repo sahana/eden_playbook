@@ -1,10 +1,13 @@
 #!/bin/bash
 
 password=`date +%s | sha256sum | base64 | head -c 32 ; echo`
-privDNS=`curl -s  http://169.254.169.254/latest/meta-data/hostname | sed "s/.ec2.internal//"`
-pubDNS=`curl http://169.254.169.254/latest/meta-data/public-hostname`
+privDNS=`wget --quiet -O - http://169.254.169.254/latest/meta-data/hostname | sed "s/.ec2.internal//"`
+pubDNS=`wget --quiet -O - http://169.254.169.254/latest/meta-data/public-hostname`
 template="default"
 
+cat << EOF > inventory
+127.0.0.1
+EOF
 
 cat << EOF > "deploy.yml"
 ---
@@ -29,4 +32,4 @@ EOF
 
 echo "Now running ansible-playbook"
 
-ansible-playbook deploy.yml
+/usr/local/bin/ansible-playbook -i inventory deploy.yml
