@@ -1,34 +1,15 @@
 #!/bin/bash
 
-echo "Enter the Public IP"
-read pubIP
+password=`date +%s | sha256sum | base64 | head -c 32 ; echo`
+privDNS=`curl -s  http://169.254.169.254/latest/meta-data/hostname | sed "s/.ec2.internal//"`
+pubDNS=`curl http://169.254.169.254/latest/meta-data/public-hostname`
+template="default"
 
-cat << EOF >> inventory
-$pubIP
-EOF
-
-echo "Enter the domain name"
-read pubDNS
-
-echo "Enter the Hostname"
-read privDNS
-
-echo "Enter username"
-read username
-
-echo "Enter absolute path to private key"
-read keyPath
-
-echo "Enter template name"
-read template
-
-echo "Enter Database Password"
-read password
 
 cat << EOF > "deploy.yml"
 ---
-- hosts: 54.200.167.252
-  remote_user: $username # if using debian ami
+- hosts: 127.0.0.1
+  connection: local
   sudo: yes
 
   vars:
@@ -48,4 +29,4 @@ EOF
 
 echo "Now running ansible-playbook"
 
-ansible-playbook -i inventory --private-key=$keyPath -u $username deploy.yml
+ansible-playbook deploy.yml
