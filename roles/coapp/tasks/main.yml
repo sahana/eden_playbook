@@ -24,7 +24,7 @@
   command: cp /home/admin/web2py/applications/eden/private/templates/000_config.py /home/admin/web2py/applications/eden/models
 
 - name: Editing 000_config.py
-  lineinfile: dest=/home/web2py/applications/eden/models/000_config.py
+  lineinfile: dest=/home/admin/web2py/applications/eden/models/000_config.py
               regexp="{{ item.regexp }}"
               backrefs=yes
               line="{{ item.line }}"
