@@ -1,2 +1,2 @@
-deploy.yml
+*.yml
 inventory
