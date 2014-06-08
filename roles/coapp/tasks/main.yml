@@ -30,23 +30,43 @@
               line="{{ item.line }}"
               state=present
   with_items:
-    - { regexp: '^settings.base.template = "default"', line: 'settings.base.template = "setup"' }
+    - { regexp: '^settings.base.template = \"default\"', line: 'settings.base.template = \"setup\"' }
     - { regexp: '^FINISHED_EDITING_CONFIG_FILE = False', line: 'FINISHED_EDITING_CONFIG_FILE = True' }
     - { regexp: '^#settings.base.public_url = \"http://127.0.0.1:8000\"', line: 'settings.base.public_url = \"http://{{ sitename }}\"' }
 
 
-- name: Copy web2py init script
+- name: Copy web2py init scripts
   sudo: yes
-  copy: src=web2py dest=/etc/init.d/web2py
+  copy: src={{ item}} dest=/etc/init.d/{{ item }}
+  with_items:
+    - web2py
+    - web2py-scheduler
 
 - name: update-rc.d
   sudo: yes
-  command: update-rc.d web2py defaults
+  command: update-rc.d {{ item }} defaults
+  with_items:
+    - web2py
+    - web2py-scheduler
 
 - name: Fix permissions for init.d script
   sudo: yes
-  file: path=/etc/init.d/web2py state=file mode=755
+  file: path=/etc/init.d/{{ item }} state=file mode=755
+  with_items:
+    - web2py
+    - web2py-scheduler
+
+- name: Chown web2py directory
+  sudo: yes
+  file: path=/home/admin/web2py state=directory owner=admin group=admin recurse=yes
+
+- name: Prepopulate Database
+  shell: sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/admin/web2py
 
 - name: Launch Coapp
   sudo: yes
   service: name=web2py state=started
+
+- name: Launch Scheduler
+  sudo: yes
+  service: name=web2py-scheduler state=started
