@@ -61,7 +61,7 @@
   file: path=/home/admin/web2py state=directory owner=admin group=admin recurse=yes
 
 - name: Prepopulate Database
-  shell: sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/admin/web2py
+  shell: sudo -H -u admin python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/admin/web2py
 
 - name: Launch Coapp
   sudo: yes
