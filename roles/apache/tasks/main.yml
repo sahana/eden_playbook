@@ -52,7 +52,7 @@
     - maintenance
 
 - name: Update rc.local
-  lineinfile: "dest=/etc/rc.local insertbefore='exit 0' line='cd /home/web2py && python web2py.py -K eden -Q >/dev/null 2>\&1 &'"
+  lineinfile: "dest=/etc/rc.local insertbefore='exit 0' line='cd /home/web2py && python web2py.py -K eden -Q >/dev/null 2>&1 &'"
 
 
 
