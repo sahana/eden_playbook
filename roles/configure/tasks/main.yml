@@ -15,8 +15,7 @@
 - name: Configure for Internet Mail Delivery
   command: dpkg-reconfigure -f noninteractive exim4-config
 
-- name: Copying 000_config.py
-  command: cp /home/web2py/applications/eden/private/templates/000_config.py /home/web2py/applications/eden/models
+
 
 - name: Editing 000_config.py
   lineinfile: dest=/home/web2py/applications/eden/models/000_config.py

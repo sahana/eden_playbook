@@ -80,6 +80,9 @@
     - su -c - postgres "psql -q -d sahana -c 'grant all on geometry_columns to sahana;'"
     - su -c - postgres "psql -q -d sahana -c 'grant all on spatial_ref_sys to sahana;'"
 
+- name: Copying 000_config.py
+  command: cp /home/web2py/applications/eden/private/templates/000_config.py /home/web2py/applications/eden/models
+
 - name: Configure DB
   lineinfile: dest=/home/web2py/applications/eden/models/000_config.py
               regexp="{{ item.regexp }}"
