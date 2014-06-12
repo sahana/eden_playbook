@@ -25,10 +25,15 @@
   file: path=/var/lib/cherokee/graphs state=directory owner=www-data group=www-data
 
 - name: Copy init.d script
-  copy: src=cherokee dest=/etc/init.d/cherokee
-
-- name: Change permissions
-  file: path=/etc/init.d/cherokee mode=755
+  copy: src=cherokee dest=/etc/init.d/cherokee mode=755
 
 - name: update-rc.d
   command: update-rc.d cherokee defaults
+
+- name: Copying management scripts
+  copy: "src={{ item.src }} dest={{ item.dest }} mode=755"
+  with_items:
+    - { src: 'compile', dest: '/usr/local/bin/compile' }
+    - { src: 'pull', dest: '/usr/local/bin/pull' }
+    - { src: 'revert', dest: '/usr/local/bin/revert' }
+    - { src: 'w2p', dest: '/usr/local/bin/w2p' }
