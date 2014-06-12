@@ -63,3 +63,4 @@
 
 - name: Restart apache
   command: apache2ctl restart
+  when: web_server == "apache"
