@@ -11,10 +11,10 @@
     - expires
 
 - name: Update wsgi.conf
-  lineinfile: dest=/etc/apache2/mods-enabled/wsgi.conf regexp='</IfModule>' insertbefore='WSGIPassAuthorization On'
+  lineinfile: dest=/etc/apache2/mods-enabled/wsgi.conf insertbefore='</IfModule>' line='WSGIPassAuthorization On'
 
 - name: Update apache2.conf
-  lineinfile: dest=/etc/mysql/my.cnf
+  lineinfile: dest=/etc/apache2/apache2.conf
               regexp="{{ item.regexp }}"
               backrefs=yes
               line="{{ item.line }}"
@@ -46,13 +46,13 @@
   file: path=/etc/apache2/sites-enabled/000-default state=absent
 
 - name: Copy production and maintenance configs
-  copy: src={{ item }} dest=/etc/apache2/sites-enabled/{{ item }}
+  template: src={{ item }} dest=/etc/apache2/sites-available/{{ item }}
   with_items:
     - production
     - maintenance
 
 - name: Update rc.local
-  lineinfile: "dest=/etc/rc.local regexp='exit 0' insertbefore='cd /home/web2py && python web2py.py -K eden -Q >/dev/null 2>\&1 &'"
+  lineinfile: "dest=/etc/rc.local insertbefore='exit 0' line='cd /home/web2py && python web2py.py -K eden -Q >/dev/null 2>\&1 &'"
 
 
 

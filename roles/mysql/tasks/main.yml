@@ -19,7 +19,7 @@
     - { regexp: 'max_allowed_packet      = 16M', line: 'max_allowed_packet = 1M' }
 
 - name: Restarting MySQL
-  notify: restart mysql
+  service: name=mysql state=restarted
 
 - name: Copy backup script
   copy: src=backup dest=/usr/local/bin/backup mode=755
@@ -35,3 +35,14 @@
 
 - name: Create sahana db user
   mysql_user: "name=sahana password={{ password }} priv=*.*:ALL host=localhost state=present"
+
+- name: Configure DB
+  lineinfile: dest=/home/web2py/applications/eden/models/000_config.py
+              regexp="{{ item.regexp }}"
+              backrefs=yes
+              line="{{ item.line }}"
+              state=present
+  with_items:
+    - { regexp: '^#settings.database.db_type = \"mysql\"', line: 'settings.database.db_type = \"mysql\"' }
+    - { regexp: '^#settings.database.password = \"password\"', line: 'settings.database.password = \"{{ password }}\"' }
+    - { regexp: '^settings.base.migrate = False', line: 'settings.base.migrate = True' }
