@@ -55,7 +55,7 @@
     - { src: 'pg1024', dest: '/usr/local/bin/pg1024' }
 
 - name: Copy clean script
-  template: src=clean.j2 dest=/usr/loca/bin/clean mode=755
+  template: src=clean.j2 dest=/usr/local/bin/clean mode=755
 
 - name: Transfer pgpass.sql
   template: src=pgpass.sql dest=/tmp/pgpass.sql

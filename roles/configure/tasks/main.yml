@@ -57,6 +57,9 @@
     - { name: 'uwsgi-prod', state: 'started' }
   when: web_server == "cherokee"
 
-- name: Start Server
+- name: Enable production VirtualHost
   command: a2ensite production
   when: web_server == "apache"
+
+- name: Restart apache
+  command: apache2ctl restart
