@@ -26,9 +26,9 @@ PIDDIR=/var/run/$NAME
 PIDFILE=$PIDDIR/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 DAEMON=/usr/bin/python
-DAEMON_DIR=/home/admin/web2py
+DAEMON_DIR=/home/web2py
 DAEMON_ARGS="web2py.py --pid_filename=$PIDFILE -K eden"
-DAEMON_USER=admin
+DAEMON_USER=web2py
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0

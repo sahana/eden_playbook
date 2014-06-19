@@ -1,7 +1,6 @@
 ---
 - name: Installing Dependencies
   apt: name={{ item }} state=latest update_cache=yes
-  sudo: yes
   with_items:
     - python-lxml
     - python-shapely
@@ -11,20 +10,26 @@
     - python-dev
     - python-pip
 
+- name: Create web2py user
+  command: adduser --system --disabled-password web2py
+
+- name: Create web2py group
+  group: name=web2py state=present
+
 - name: Clone Web2py
-  git: repo=git://github.com/web2py/web2py.git dest=/home/admin/web2py
+  git: repo=git://github.com/web2py/web2py.git dest=/home/web2py
 
 - name: Copy routes.py
-  copy: src=routes.py dest=/home/admin/web2py/routes.py
+  copy: src=routes.py dest=/home/web2py/routes.py
 
 - name: Clone Coapp
-  git: repo=git://github.com/gnarula/eden_deployment dest=/home/admin/web2py/applications/eden
+  git: repo=git://github.com/gnarula/eden_deployment dest=/home/web2py/applications/eden_deployment
 
 - name: Move 000_config.py
-  command: cp /home/admin/web2py/applications/eden/private/templates/000_config.py /home/admin/web2py/applications/eden/models
+  command: cp /home/web2py/applications/eden/private/templates/000_config.py /home/web2py/applications/eden/models
 
 - name: Editing 000_config.py
-  lineinfile: dest=/home/admin/web2py/applications/eden/models/000_config.py
+  lineinfile: dest=/home/web2py/applications/eden/models/000_config.py
               regexp="{{ item.regexp }}"
               backrefs=yes
               line="{{ item.line }}"
@@ -37,7 +42,7 @@
 
 - name: Copy web2py init scripts
   sudo: yes
-  copy: src={{ item}} dest=/etc/init.d/{{ item }}
+  copy: src={{ item}} dest=/etc/init.d/{{ item }} mode=755
   with_items:
     - web2py
     - web2py-scheduler
@@ -49,24 +54,36 @@
     - web2py
     - web2py-scheduler
 
-- name: Fix permissions for init.d script
-  sudo: yes
-  file: path=/etc/init.d/{{ item }} state=file mode=755
+- name: Fix permissions
+  file: path=/home/{{item}} state=directory owner=web2py
   with_items:
     - web2py
-    - web2py-scheduler
-
-- name: Chown web2py directory
-  sudo: yes
-  file: path=/home/admin/web2py state=directory owner=admin group=admin recurse=yes
+    - web2py/applications
+    - web2py/applications/admin/cache
+    - web2py/applications/admin/cron
+    - web2py/applications/admin/databases
+    - web2py/applications/admin/errors
+    - web2py/applications/admin/sessions
+    - web2py/applications/eden
+    - web2py/applications/eden/cache
+    - web2py/applications/eden/cron
+    - web2py/applications/eden/databases
+    - web2py/applications/eden/errors
+    - web2py/applications/eden/models
+    - web2py/applications/eden/sessions
+    - web2py/applications/eden/static/img/markers
+    - web2py/applications/eden/static/cache
+    - web2py/applications/eden/static/cache/chart
+    - web2py/applications/eden/uploads
+    - web2py/applications/eden/uploads/gis_cache
+    - web2py/applications/eden/uploads/images
+    - web2py/applications/eden/uploads/tracks
 
 - name: Prepopulate Database
-  shell: sudo -H -u admin python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/admin/web2py
+  shell: sudo -H -u web2py python web2py.py -S eden_deployment -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/web2py
 
 - name: Launch Coapp
-  sudo: yes
   service: name=web2py state=started
 
 - name: Launch Scheduler
-  sudo: yes
   service: name=web2py-scheduler state=started

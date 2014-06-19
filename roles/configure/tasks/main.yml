@@ -57,6 +57,10 @@
     - { name: 'uwsgi-prod', state: 'started' }
   when: web_server == "cherokee"
 
+- name: Stop Rocket Server
+  service: name=web2py  state=stopped
+  when: inventory_hostname == '127.0.0.1'
+
 - name: Enable production VirtualHost
   command: a2ensite production
   when: web_server == "apache"
