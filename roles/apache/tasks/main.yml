@@ -1,6 +1,9 @@
 ---
 - name: Install apache
-  apt: name=libapache2-mod-wsgi apache2.2-common state=latest
+  apt: name={{ item }} state=latest
+  with_items:
+    - libapache2-mod-wsgi
+    - apache2.2-common
 
 - name: a2enmod
   command: "a2enmod {{ item }}"
