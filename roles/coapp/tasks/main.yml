@@ -47,12 +47,12 @@
     - web2py
     - web2py-scheduler
 
-- name: update-rc.d
-  sudo: yes
-  command: update-rc.d {{ item }} defaults
-  with_items:
-    - web2py
-    - web2py-scheduler
+# - name: update-rc.d
+#   sudo: yes
+#   command: update-rc.d {{ item }} defaults
+#   with_items:
+#     - web2py
+#     - web2py-scheduler
 
 - name: Fix permissions
   file: path=/home/{{item}} state=directory owner=web2py
@@ -81,6 +81,12 @@
 
 - name: Prepopulate Database
   shell: sudo -H -u web2py python web2py.py -S eden_deployment -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/web2py
+
+- name: Create ansible dir
+  file: path=/etc/ansible state=directory
+
+- name: Copy ansible.cfg
+  copy: src=ansible.cfg dest=/etc/ansible/ansible.cfg
 
 - name: Launch Coapp
   service: name=web2py state=started
