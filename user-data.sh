@@ -20,4 +20,4 @@ git clone https://github.com/gnarula/eden_playbook
 # Run the install
 cd eden_playbook
 
-bash bootstrap.sh
+bash bootstrap_coapp.sh
