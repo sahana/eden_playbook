@@ -61,6 +61,10 @@
   service: name=web2py  state=stopped
   when: inventory_hostname == '127.0.0.1'
 
+- name: Remove port 80 redirection rule
+  shell: iptables -t nat -D PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8000
+  when: inventory_hostname == '127.0.0.1'
+
 - name: Enable production VirtualHost
   command: a2ensite production
   when: web_server == "apache"

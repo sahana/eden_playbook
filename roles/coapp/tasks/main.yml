@@ -88,6 +88,9 @@
 - name: Copy ansible.cfg
   copy: src=ansible.cfg dest=/etc/ansible/ansible.cfg
 
+- name: Redirect port 80 to 8000
+  shell: iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8000
+
 - name: Launch Coapp
   service: name=web2py state=started
 
