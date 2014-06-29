@@ -16,6 +16,7 @@
   #RewriteRule ^/$ /eden/static/index.html [R,L]
   RewriteCond %{REQUEST_URI}    !/phpmyadmin(.*)
   RewriteCond %{REQUEST_URI}    !/eden/(.*)
+  RewriteCond %{REQUEST_URI}    !/eden_deployment/(.*)
   RewriteRule /(.*) /eden/$1 [R]
   ### static files do not need WSGI
   <LocationMatch "^(/[\w_]*/static/.*)">

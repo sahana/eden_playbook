@@ -1,11 +1,22 @@
 ---
 - name: Install MySQL
-  apt: name={{ item }} state=latest
+  apt: name={{ item }} state=latest install_recommends=no
   with_items:
     - mysql-server
     - python-mysqldb
+    - libmysqlclient-dev
+
+- name: Install phpmyadmin
+  apt: name={{ item }} state=latest install_recommends=no
+  with_items:
+    - php5-cgi
+    - php5-mysql
     - phpmyadmin
     - mytop
+
+- name: Create symbolic link
+  file: path=/usr/share/phpmyadmin dest=/var/www/phpmyadmin
+  when: web_server == "cherokee"
 
 - name: Editing my.cnf
   lineinfile: dest=/etc/mysql/my.cnf
