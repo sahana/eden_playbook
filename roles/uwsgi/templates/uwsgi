@@ -2,8 +2,8 @@
 # /etc/init.d/uwsgi-prod
 #
 daemon=/usr/local/bin/uwsgi
-pid=/tmp/uwsgi-prod.pid
-args="/home/web2py/uwsgi.ini"
+pid=/tmp/uwsgi-{{ type }}.pid
+args="/home/{{ type }}/uwsgi.ini"
 # Carry out specific functions when asked to by the system
 case "$1" in
     start)

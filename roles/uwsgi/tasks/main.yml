@@ -15,28 +15,76 @@
   copy: src={{ item.src }} dest={{ item.dest }}
   with_items:
     - { src: 'logrotate', dest: '/etc/logrotate.d/uwsgi' }
-    - { src: 'scheduler', dest: '/home/web2py/run_scheduler.py' }
-    - { src: 'uwsgi.ini', dest: '/home/web2py/uwsgi.ini' }
+    - { src: 'scheduler', dest: '/home/{{ type }}/run_scheduler.py' }
+  tags:
+    - test
+    - demo
+
+- name: Copy uwsgi.ini
+  template: src=uwsgi.ini dest=/home/{{ type }}/uwsgi.ini
+  tags:
+    - test
+    - demo
 
 - name: Create pid file
-  file: path=/tmp/uwsgi-prod.pid state=touch owner=web2py group=web2py
+  file: path=/tmp/uwsgi-{{ type }}.pid state=touch owner=web2py group=web2py
+  tags:
+    - test
+    - demo
 
 - name: Create log dir
   file: path=/var/log/uwsgi state=directory owner=web2py group=web2py
 
 - name: Copy init.d script
-  copy: src=uwsgi dest=/etc/init.d/uwsgi-prod
+  template: src=uwsgi dest=/etc/init.d/uwsgi-{{ type }}
+  tags:
+    - test
+    - demo
 
 - name: Fix permissions for init.d script
-  file: path=/etc/init.d/uwsgi-prod state=file mode=755
+  file: path=/etc/init.d/uwsgi-{{ type }} state=file mode=755
+  tags:
+    - test
+    - demo
 
 - name: update-rc.d
-  command: update-rc.d uwsgi-prod defaults
+  command: update-rc.d uwsgi-{{ type }} defaults
+  tags:
+    - test
+    - demo
 
-- name: Configuring Cherokee
+- name: Copying cherokee.conf
   copy: src=cherokee.conf dest=/etc/cherokee/cherokee.conf
+  tags:
+    - test
+    - demo
+
+- name: Copying update_cherokee.py
+  template: src=update_cherokee_test.py dest=/home/test/update_cherokee.py
+  when: type == 'test'
+  tags:
+    - test
+
+- name: Copying update_cherokee.py
+  template: src=update_cherokee_demo.py dest=/home/demo/update_cherokee.py
+  when: type == 'demo'
+  tags:
+    - demo
+
+- name: Copying update_cherokee.py
+  copy: src=update_cherokee_prod.py dest=/home/prod/update_cherokee.py
+  when: type == 'prod'
+
+- name: Executing update_cherokee
+  command: python update_cherokee.py chdir=/home/{{ type }}
+  tags:
+    - test
+    - demo
 
 - name: Copy maintenance.html
   copy: src=maintenance.html dest=/var/www/maintenance.html
   notify: restart cherokee
+  tags:
+    - test
+    - demo
 

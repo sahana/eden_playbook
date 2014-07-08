@@ -53,51 +53,76 @@
 - name: Create web2py group
   group: name=web2py state=present
 
+- name: Create symlink
+  file: src=/home/web2py dest=/home/prod state=link owner=web2py group=web2py
+  when: type == 'prod'
+
 - name: Clone web2py
-  git: repo=git://github.com/web2py/web2py.git dest=/home/web2py
+  git: repo=git://github.com/web2py/web2py.git dest=/home/{{ type}}
+  tags:
+    - test
+    - demo
 
 - name: Copy wsgihandler
-  command: cp -f /home/web2py/handlers/wsgihandler.py /home/web2py
+  command: cp -f /home/{{ type }}/handlers/wsgihandler.py /home/{{ type }}
+  tags:
+    - test
+    - demo
 
 - name: Copy routes.py
-  copy: src=routes.py dest=/home/web2py/routes.py
+  copy: src=routes.py dest=/home/{{ type }}/routes.py
+  tags:
+    - test
+    - demo
 
 - name: Create matplotlib directory
-  file: path=/home/web2py/.matplotlib state=directory owner=web2py
+  file: path=/home/{{ type }}/.matplotlib state=directory owner=web2py
+  tags:
+    - test
+    - demo
 
 - name: Update wsgihandler.py
-  lineinfile: dest=/home/web2py/wsgihandler.py
+  lineinfile: dest=/home/{{ type }}/wsgihandler.py
               regexp=''
               insertafter=EOF
-              line='os.environ["MPLCONFIGDIR"] = "/home/web2py/.matplotlib"'
+              line='os.environ["MPLCONFIGDIR"] = "/home/{{ type }}/.matplotlib"'
+  tags:
+    - test
+    - demo
 
 # - name: Edit matplotlibrc
 #   lineinfile: dest=/etc/matplotlibrc state=present backref=yes regexp='backend      : TkAgg' line='backend      : Agg'
 
 - name: Clone Eden
-  git: repo=git://github.com/flavour/eden.git dest=/home/web2py/applications/eden
+  git: repo=git://github.com/flavour/eden.git dest=/home/{{ type }}/applications/eden
+  tags:
+    - test
+    - demo
 
 - name: Fix permissions
   file: path=/home/{{item}} state=directory owner=web2py
   with_items:
-    - web2py
-    - web2py/applications
-    - web2py/applications/admin/cache
-    - web2py/applications/admin/cron
-    - web2py/applications/admin/databases
-    - web2py/applications/admin/errors
-    - web2py/applications/admin/sessions
-    - web2py/applications/eden
-    - web2py/applications/eden/cache
-    - web2py/applications/eden/cron
-    - web2py/applications/eden/databases
-    - web2py/applications/eden/errors
-    - web2py/applications/eden/models
-    - web2py/applications/eden/sessions
-    - web2py/applications/eden/static/img/markers
-    - web2py/applications/eden/static/cache
-    - web2py/applications/eden/static/cache/chart
-    - web2py/applications/eden/uploads
-    - web2py/applications/eden/uploads/gis_cache
-    - web2py/applications/eden/uploads/images
-    - web2py/applications/eden/uploads/tracks
+    - "{{ type }}"
+    - "{{ type }}/applications"
+    - "{{ type }}/applications/admin/cache"
+    - "{{ type }}/applications/admin/cron"
+    - "{{ type }}/applications/admin/databases"
+    - "{{ type }}/applications/admin/errors"
+    - "{{ type }}/applications/admin/sessions"
+    - "{{ type }}/applications/eden"
+    - "{{ type }}/applications/eden/cache"
+    - "{{ type }}/applications/eden/cron"
+    - "{{ type }}/applications/eden/databases"
+    - "{{ type }}/applications/eden/errors"
+    - "{{ type }}/applications/eden/models"
+    - "{{ type }}/applications/eden/sessions"
+    - "{{ type }}/applications/eden/static/img/markers"
+    - "{{ type }}/applications/eden/static/cache"
+    - "{{ type }}/applications/eden/static/cache/chart"
+    - "{{ type }}/applications/eden/uploads"
+    - "{{ type }}/applications/eden/uploads/gis_cache"
+    - "{{ type }}/applications/eden/uploads/images"
+    - "{{ type }}/applications/eden/uploads/tracks"
+  tags:
+    - test
+    - demo

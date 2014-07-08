@@ -3,7 +3,7 @@
   file: path=/etc/apt/sources.list.d/pgdg.list state=touch
 
 - name: Add repo url
-  lineinfile: dest=/etc/apt/sources.list.d/pgdg.list line="deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main"
+  lineinfile: dest=/etc/apt/sources.list.d/pgdg.list line="deb http://apt.postgresql.org/pub/repos/apt/ {{ distro }}-pgdg main"
 
 - name: Add key
   apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
@@ -67,11 +67,32 @@
   file: path=/tmp/pgpass.sql state=absent
 
 - name: Create DB
-  command: su -c - postgres "createdb -O sahana -E UTF8 sahana -T template0"
+  command: su -c - postgres "createdb -O sahana -E UTF8 -l en_US.UTF-8 sahana -T template0"
+  when: type == 'prod'
+
+- name: Create DB
+  command: su -c - postgres "createdb -O sahana -E UTF8 -l en_US.UTF-8 sahana-demo -T template0"
+  when: type == 'demo'
 
 - name: Get PostGIS version
   shell: dpkg-query -L postgresql-9.3-postgis-scripts | grep -P "postgis--\d+.\d+.\d+.sql"
   register: postgis_version
+  tags:
+    - test
+    - demo
+
+- name: Copy clean script
+  template: src=clean_test.sh dest=/usr/local/bin/clean mode=755
+  when: type == 'test' or dtype == 'afterprod'
+  tags:
+    - test
+    - demo
+
+- name: Copy update_clean
+  copy: src=update_clean.py dest=/tmp/update_clean.py
+  when: type == 'test'
+  tags:
+    - test
 
 - name: PostGIS DB Config
   command: "{{ item }}"
@@ -79,12 +100,31 @@
     - su -c - postgres "psql -q -d sahana -f {{ postgis_version.stdout }}"
     - su -c - postgres "psql -q -d sahana -c 'grant all on geometry_columns to sahana;'"
     - su -c - postgres "psql -q -d sahana -c 'grant all on spatial_ref_sys to sahana;'"
+  when: type == 'prod'
+
+- name: PostGIS DB Config
+  command: "{{ item }}"
+  with_items:
+    - su -c - postgres "psql -q -d sahana-demo -f {{ postgis_version.stdout }}"
+    - su -c - postgres "psql -q -d sahana-demo -c 'grant all on geometry_columns to sahana;'"
+    - su -c - postgres "psql -q -d sahana-demo -c 'grant all on spatial_ref_sys to sahana;'"
+  when: type == 'demo'
+  tags:
+    - demo
+
+- name: Copying 000_config.py for Production
+  command: cp /home/{{ type }}/applications/eden/private/templates/000_config.py /home/{{ type }}/applications/eden/models
+  when: type == 'prod' or dtype == 'beforeprod'
 
 - name: Copying 000_config.py
-  command: cp /home/web2py/applications/eden/private/templates/000_config.py /home/web2py/applications/eden/models
+  command: cp /home/web2py/applications/eden/models/000_config.py /home/{{ type }}/applications/eden/models
+  when: type == 'test' or dtype == 'afterprod'
+  tags:
+    - test
+    - demo
 
 - name: Configure DB
-  lineinfile: dest=/home/web2py/applications/eden/models/000_config.py
+  lineinfile: dest=/home/{{ type }}/applications/eden/models/000_config.py
               regexp="{{ item.regexp }}"
               backrefs=yes
               line="{{ item.line }}"
@@ -94,3 +134,16 @@
     - { regexp: '^#settings.database.password = \"password\"', line: 'settings.database.password = \"{{ password }}\"' }
     - { regexp: '^#settings.gis.spatialdb = True', line: 'settings.gis.spatialdb = True' }
     - { regexp: '^settings.base.migrate = False', line: 'settings.base.migrate = True' }
+
+- name: Configure DB
+  lineinfile: dest=/home/{{ type }}/applications/eden/models/000_config.py
+              regexp="{{ item.regexp }}"
+              backrefs=yes
+              line="{{ item.line }}"
+              state=present
+  with_items:
+    - { regexp: '^#settings.database.database = \"sahana\"', line: 'settings.database.database = \"sahana-{{ type }}\"' }
+  when: type != 'prod'
+  tags:
+    - test
+    - demo

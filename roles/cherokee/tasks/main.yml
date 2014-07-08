@@ -37,3 +37,13 @@
     - { src: 'pull', dest: '/usr/local/bin/pull' }
     - { src: 'revert', dest: '/usr/local/bin/revert' }
     - { src: 'w2p', dest: '/usr/local/bin/w2p' }
+
+- name: Copying management scripts
+  copy: "src={{ item.src }} dest={{ item.dest }} mode=755"
+  with_items:
+    - { src: 'compile_test.sh', dest: '/usr/local/bin/compile' }
+    - { src: 'pull_test.sh', dest: '/usr/local/bin/pull' }
+    - { src: 'w2p_test.sh', dest: '/usr/local/bin/w2p' }
+  tags:
+    - test
+    - demo

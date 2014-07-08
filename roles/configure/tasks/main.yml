@@ -15,10 +15,8 @@
 - name: Configure for Internet Mail Delivery
   command: dpkg-reconfigure -f noninteractive exim4-config
 
-
-
 - name: Editing 000_config.py
-  lineinfile: dest=/home/web2py/applications/eden/models/000_config.py
+  lineinfile: dest=/home/{{ type }}/applications/eden/models/000_config.py
               regexp="{{ item.regexp }}"
               backrefs=yes
               line="{{ item.line }}"
@@ -29,13 +27,31 @@
     - { regexp: 'akeytochange', line: 'settings.auth.hmac_key = \"{{ sitename }}{{ password }}\"' }
     - { regexp: '^#settings.base.public_url = \"http://127.0.0.1:8000\"', line: 'settings.base.public_url = \"http://{{ sitename }}\"' }
     - { regexp: '^#settings.base.cdn = True', line: 'settings.base.cdn = True' }
+  tags:
+    - test
+    - demo
 
+- name: Run update_clean
+  command: python web2py.py -S eden -M -R /tmp/update_clean.py chdir=/home/web2py
+  when: type == 'test'
+  tags:
+    - test
+
+- name: Run clean script
+  command: clean test
+  when: type != 'prod'
+  tags:
+    - test
+    - demo
 
 - name: Run web2py
-  command: sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/web2py
+  command: sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/{{ type }}
+  tags:
+    - test
+    - demo
 
 - name: Configuring for Production
-  lineinfile: dest=/home/web2py/applications/eden/models/000_config.py
+  lineinfile: dest=/home/{{ type }}/applications/eden/models/000_config.py
               regexp="{{ item.regexp }}"
               backrefs=yes
               line="{{ item.line }}"
@@ -45,7 +61,10 @@
     - { regexp: '^settings.base.migrate = True', line: 'settings.base.migrate = False' }
 
 - name: Run web2py
-  command: sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/compile.py chdir=/home/web2py
+  command: sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/compile.py chdir=/home/{{ type }}
+  tags:
+    - test
+    - demo
 
 - name: Update crontab
   copy: src=cron dest=/etc/crontab
@@ -54,8 +73,11 @@
   service: name={{ item.name }} state={{ item.state }}
   with_items:
     - { name: 'cherokee', state: 'restarted' }
-    - { name: 'uwsgi-prod', state: 'started' }
+    - { name: 'uwsgi-{{ type }}', state: 'started' }
   when: web_server == "cherokee"
+  tags:
+    - test
+    - demo
 
 - name: Stop Rocket Server
   service: name=web2py  state=stopped
