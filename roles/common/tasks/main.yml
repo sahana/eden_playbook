@@ -59,6 +59,7 @@
 
 - name: Clone web2py
   git: repo=git://github.com/web2py/web2py.git dest=/home/{{ type}}
+  when: type != 'prod'
   tags:
     - test
     - demo

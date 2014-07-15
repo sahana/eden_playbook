@@ -23,6 +23,7 @@
               state=present
   with_items:
     - { regexp: '^settings.base.template = \"default\"', line: 'settings.base.template = \"{{ template }}\"' }
+    - { regexp: '^#settings.base.prepopulate = \[\"demo\"\]', line: 'settings.base.prepopulate = ({{ prepop_options }})' }
     - { regexp: '^FINISHED_EDITING_CONFIG_FILE = False', line: 'FINISHED_EDITING_CONFIG_FILE = True' }
     - { regexp: 'akeytochange', line: 'settings.auth.hmac_key = \"{{ sitename }}{{ password }}\"' }
     - { regexp: '^#settings.base.public_url = \"http://127.0.0.1:8000\"', line: 'settings.base.public_url = \"http://{{ sitename }}\"' }
