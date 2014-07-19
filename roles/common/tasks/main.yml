@@ -59,7 +59,7 @@
 
 - name: Clone web2py
   git: repo=git://github.com/web2py/web2py.git dest=/home/{{ type}}
-  when: type != 'prod'
+  when: type != 'prod' or inventory_hostname != '127.0.0.1'
   tags:
     - test
     - demo
