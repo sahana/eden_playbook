@@ -1,4 +1,56 @@
 ---
+
+- name: Copying 000_config.py for Production
+  command: cp /home/{{ type }}/applications/eden/private/templates/000_config.py /home/{{ type }}/applications/eden/models
+  when: type == 'prod' or dtype == 'beforeprod'
+
+- name: Copying 000_config.py
+  command: cp /home/web2py/applications/eden/models/000_config.py /home/{{ type }}/applications/eden/models
+  when: type == 'test' or dtype == 'afterprod'
+  tags:
+    - test
+    - demo
+
+- name: Configure DB
+  lineinfile: dest=/home/{{ type }}/applications/eden/models/000_config.py
+              regexp="{{ item.regexp }}"
+              backrefs=yes
+              line="{{ item.line }}"
+              state=present
+  with_items:
+    - { regexp: '^#settings.database.db_type = \"postgres\"', line: 'settings.database.db_type = \"postgres\"' }
+    - { regexp: '^#settings.database.host = \"localhost\"', line: 'settings.database.host = \"{{ db_ip }}\"' }
+    - { regexp: '^#settings.database.password = \"password\"', line: 'settings.database.password = \"{{ password }}\"' }
+    - { regexp: '^#settings.gis.spatialdb = True', line: 'settings.gis.spatialdb = True' }
+    - { regexp: '^settings.base.migrate = False', line: 'settings.base.migrate = True' }
+  when: db_type == 'postgresql'
+
+- name: Configure DB
+  lineinfile: dest=/home/web2py/applications/eden/models/000_config.py
+              regexp="{{ item.regexp }}"
+              backrefs=yes
+              line="{{ item.line }}"
+              state=present
+  with_items:
+    - { regexp: '^#settings.database.db_type = \"mysql\"', line: 'settings.database.db_type = \"mysql\"' }
+    - { regexp: '^#settings.database.host = \"localhost\"', line: 'settings.database.db_type = \"{{ db_ip }}\"' }
+    - { regexp: '^#settings.database.password = \"password\"', line: 'settings.database.password = \"{{ password }}\"' }
+    - { regexp: '^settings.base.migrate = False', line: 'settings.base.migrate = True' }
+  when: db_type == 'mysql'
+
+- name: Configure DB
+  lineinfile: dest=/home/{{ type }}/applications/eden/models/000_config.py
+              regexp="{{ item.regexp }}"
+              backrefs=yes
+              line="{{ item.line }}"
+              state=present
+  with_items:
+    - { regexp: '^#settings.database.database = \"sahana\"', line: 'settings.database.database = \"sahana-{{ type }}\"' }
+  when: type != 'prod'
+  tags:
+    - test
+    - demo
+
 - name: Updating hosts file
   lineinfile: dest=/etc/hosts
               regexp="^localhost.localdomain localhost"
@@ -23,7 +75,7 @@
               state=present
   with_items:
     - { regexp: '^settings.base.template = \"default\"', line: 'settings.base.template = \"{{ template }}\"' }
-    - { regexp: '^#settings.base.prepopulate = \[\"demo\"\]', line: 'settings.base.prepopulate = ({{ prepop_options }})' }
+    - { regexp: '^#settings.base.prepopulate = \[\"demo\"\]', line: 'settings.base.prepopulate = (\"{{ prepop_options }}\")' }
     - { regexp: '^FINISHED_EDITING_CONFIG_FILE = False', line: 'FINISHED_EDITING_CONFIG_FILE = True' }
     - { regexp: 'akeytochange', line: 'settings.auth.hmac_key = \"{{ sitename }}{{ password }}\"' }
     - { regexp: '^#settings.base.public_url = \"http://127.0.0.1:8000\"', line: 'settings.base.public_url = \"http://{{ sitename }}\"' }
@@ -73,7 +125,6 @@
 - name: Start services
   service: name={{ item.name }} state={{ item.state }}
   with_items:
-    - { name: 'cherokee', state: 'restarted' }
     - { name: 'uwsgi-{{ type }}', state: 'started' }
   when: web_server == "cherokee"
   tags:
@@ -88,6 +139,7 @@
   shell: iptables -t nat -D PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8000
   when: inventory_hostname == '127.0.0.1'
 
+# Todo: Move this to apache role
 - name: Enable production VirtualHost
   command: a2ensite production
   when: web_server == "apache"
