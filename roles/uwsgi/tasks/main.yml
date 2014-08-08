@@ -53,4 +53,15 @@
     - test
     - demo
 
+- name: Copy clean_eden
+  copy: src=clean_eden.sh dest=/usr/bin/clean_eden mode=755
+  tags:
+    - test
+    - demo
+
+- name: Copy update_clean
+  copy: src=update_clean.py dest=/tmp/update_clean.py
+  when: type == 'test'
+  tags:
+    - test
 

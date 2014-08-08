@@ -73,6 +73,8 @@
 - name: Create DB
   command: su -c - postgres "createdb -O sahana -E UTF8 -l en_US.UTF-8 sahana-demo -T template0"
   when: type == 'demo'
+  tags:
+   - demo
 
 - name: Get PostGIS version
   shell: dpkg-query -L postgresql-9.3-postgis-scripts | grep -P "postgis--\d+.\d+.\d+.sql"
@@ -81,18 +83,11 @@
     - test
     - demo
 
-#- name: Copy clean script
-#  template: src=clean_test.sh dest=/usr/local/bin/clean mode=755
-#  when: type == 'test' or dtype == 'afterprod'
-#  tags:
-#    - test
-#    - demo
-
-#- name: Copy update_clean
-#  copy: src=update_clean.py dest=/tmp/update_clean.py
-#  when: type == 'test'
-#  tags:
-#    - test
+- name: Copy clean script
+  template: src=clean.sh dest=/usr/local/bin/clean mode=755
+  tags:
+    - test
+    - demo
 
 - name: PostGIS DB Config
   command: "{{ item }}"
@@ -112,3 +107,27 @@
   tags:
     - demo
 
+- name: Listen externally
+  lineinfile: dest=/etc/postgresql/9.3/main/postgresql.conf
+              regexp="#listen_addresses = \'localhost\'"
+              backrefs=yes
+              line="listen_addresses = '*'"
+              state=present
+  tags:
+    - test
+    - demo
+
+- name: Allow external connections
+  lineinfile: dest=/etc/postgresql/9.3/main/pg_hba.conf
+              insertafter=EOF
+              line="host all all 0.0.0.0/0 md5"
+              state=present
+  tags:
+    - test
+    - demo
+
+- name: Restart service
+  service: name=postgresql state=restarted
+  tags:
+    - test
+    - demo
