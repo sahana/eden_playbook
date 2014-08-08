@@ -28,7 +28,7 @@ if [[ "$1" = "test" ]]; then
 else
     echo >&2 "Migrating/Populating database: $DATABASE"
     #su -c - postgres "createlang plpgsql -d $DATABASE"
-    su -c - postgres "psql -q -d $DATABASE -f /usr/share/postgresql/9.3/extension/{{ postgis_version.stdout }}"
+    su -c - postgres "psql -q -d $DATABASE -f {{ postgis_version.stdout }}"
     su -c - postgres "psql -q -d $DATABASE -c 'grant all on geometry_columns to sahana;'"
     su -c - postgres "psql -q -d $DATABASE -c 'grant all on spatial_ref_sys to sahana;'"
 fi
