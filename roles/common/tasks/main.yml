@@ -38,13 +38,15 @@
     - python-reportlab
     - python-matplotlib
     - python-xlwt
-    - python-xlrd
     - build-essential
     - libgeos-dev
     - python-pip
 
 - name: Install Shapely
   pip: name=Shapely
+
+- name: Install XLRD
+  pip: name=xlrd
 
 - name: Create web2py user
   #user: name=web2py system=true
