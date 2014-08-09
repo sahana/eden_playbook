@@ -7,6 +7,7 @@ elif [[ ! -d "/home/$1" ]]; then
     echo >&2 "$1 is not a valid instance!"
     exit 1
 fi
+INSTANCE=$1
 #/etc/init.d/uwsgi-$INSTANCE stop
 cd /home/$INSTANCE/applications/eden
 rm -rf databases/*

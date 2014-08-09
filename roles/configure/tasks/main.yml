@@ -106,7 +106,6 @@
   when: type == 'test'
   tags:
     - test
-    - demo
 
 - name: Run web2py
   command: sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/{{ type }}
