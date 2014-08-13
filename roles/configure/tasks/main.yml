@@ -107,6 +107,19 @@
   tags:
     - test
 
+# other management scripts
+
+- name: Copying management scripts
+  copy: "src={{ item.src }} dest={{ item.dest }} mode=755"
+  with_items:
+    - { src: 'compile', dest: '/usr/local/bin/compile' }
+    - { src: 'pull', dest: '/usr/local/bin/pull' }
+    - { src: 'revert', dest: '/usr/local/bin/revert' }
+    - { src: 'w2p', dest: '/usr/local/bin/w2p' }
+  tags:
+    - test
+    - demo
+
 - name: Run web2py
   command: sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py chdir=/home/{{ type }}
   tags:
