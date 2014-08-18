@@ -1,5 +1,0 @@
-#!/bin/bash
-/etc/init.d/uwsgi-prod stop
-cd /home/web2py
-python web2py.py -S eden -M -R applications/eden/static/scripts/tools/compile.py
-/etc/init.d/uwsgi-prod start

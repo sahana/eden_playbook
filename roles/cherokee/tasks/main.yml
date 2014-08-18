@@ -3,6 +3,7 @@
 - name: Install dependencies
   apt: name={{ item }} state=latest update_cache=yes
   with_items:
+    - build-essential
     - autoconf
     - automake
     - libtool
@@ -30,24 +31,6 @@
 
 - name: update-rc.d
   command: update-rc.d cherokee defaults
-
-- name: Copying management scripts
-  copy: "src={{ item.src }} dest={{ item.dest }} mode=755"
-  with_items:
-    - { src: 'compile', dest: '/usr/local/bin/compile' }
-    - { src: 'pull', dest: '/usr/local/bin/pull' }
-    - { src: 'revert', dest: '/usr/local/bin/revert' }
-    - { src: 'w2p', dest: '/usr/local/bin/w2p' }
-
-- name: Copying management scripts
-  copy: "src={{ item.src }} dest={{ item.dest }} mode=755"
-  with_items:
-    - { src: 'compile_test.sh', dest: '/usr/local/bin/compile' }
-    - { src: 'pull_test.sh', dest: '/usr/local/bin/pull' }
-    - { src: 'w2p_test.sh', dest: '/usr/local/bin/w2p' }
-  tags:
-    - test
-    - demo
 
 - name: Clone Eden for static files
   git: repo=git://github.com/flavour/eden.git dest=~/eden
